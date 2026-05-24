@@ -1,0 +1,16 @@
+{
+    "name": "The Data Cleaning Project",
+    "build": {
+        "dockerfile": "../Dockerfile"
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                // python extensions
+                "ms-python.python",
+                //code runner
+                "formulahendry.code-runner"
+            ]
+        }
+    }
+}
