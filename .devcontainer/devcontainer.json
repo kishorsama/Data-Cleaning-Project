@@ -6,9 +6,8 @@
     "customizations": {
         "vscode": {
             "extensions": [
-                // python extensions
                 "ms-python.python",
-                //code runner
+                "ms-toolsai.jupyter", // Required for Jupyter Notebooks
                 "formulahendry.code-runner"
             ]
         }

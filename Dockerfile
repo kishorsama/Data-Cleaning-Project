@@ -8,7 +8,8 @@ WORKDIR /app
 COPY requirements.txt .
 
 #installing libraries from requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir jupyter
 
 #copying rest files
 COPY . .
