@@ -47,3 +47,15 @@ def backward_fill(df: pd.DataFrame, axix: int) ->pd.DataFrame:
 
     print('Done backward fill!')
     return df_clean
+
+
+def mean_filling(df: pd.DataFrame) ->pd.DataFrame:
+    df_clean = df.copy()
+    print(f"total null values: {df_clean.isna().sum()}")
+
+    df_clean = df_clean.fillna(df_clean.mean(numeric_only=True))
+        
+
+    print('Done mean fill!')
+    return df_clean
+
