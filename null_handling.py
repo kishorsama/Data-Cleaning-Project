@@ -93,3 +93,19 @@ def mode_filling(df: pd.DataFrame, datatype: int=0) ->pd.DataFrame:
 
     print('Done mode fill!')
     return df_clean
+
+
+def interpolate_fill(df: pd.DataFrame, axix: int) ->pd.DataFrame:
+    df_clean = df.copy()
+    print(f"total null values: {df_clean.isna().sum()}")
+    
+    numeric_columns = df_clean.select_dtypes(include=['number']).columns
+
+    if axix ==1:
+        df_clean[numeric_columns] = df[numeric_columns].interpolate(axis=1)
+    
+    else:
+        df_clean[numeric_columns] = df[numeric_columns].interpolate(axis=0)
+
+    print('Done interpolate fill!')
+    return df_clean
