@@ -19,5 +19,7 @@ RUN pip install --no-cache-dir -r requirements.txt && \
 #copying rest files
 COPY . .
 
+# Create a build timestamp file inside the container
+RUN sh -c 'echo "Container built on: $(date)" > /etc/container_build_version'
 #running it
 CMD [ "python", "demo.py" ]
