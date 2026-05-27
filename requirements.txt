@@ -1,3 +1,6 @@
 jupyter
 pandas==3.0.3
 numpy==2.4.6
+scikit-learn
+scipy
+umap-learn
