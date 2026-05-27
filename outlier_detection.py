@@ -20,3 +20,22 @@ def clipped(df: pd.DataFrame) -> pd.DataFrame:
     print("IQR Outliers Handled (Clipped).")
     return df_clean
 
+def zscore(df: pd.DataFrame, threshold: float = 3.0) -> pd.DataFrame:
+    df_clean = df.copy()
+    cols = df_clean.select_dtypes(include=['number']).columns
+    m = np.ones(len(df_clean), dtype=bool) # boolean mask
+    
+    for c in cols:
+        c_data = df_clean[c].dropna() # drop NA for temp accurate calculation 
+        z = np.abs(stats.zscore(c_data))
+        
+        c_m = z < threshold # keep rows based on condition
+        valid_ind = c_data.index[c_m]
+        
+        # update main mask to keep rows valid
+        temp_m = np.zeros(len(df_clean), dtype=bool) 
+        temp_m[df_clean.index.isin(valid_ind)] = True
+        m = m & temp_m
+        
+    print("Z-score Outliers Handled (Filtered).")
+    return df_clean[m]
