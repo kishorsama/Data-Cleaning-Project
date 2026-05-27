@@ -1,36 +1,21 @@
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 
-def min_max_scaling(df: pd.DataFrame) -> pd.DataFrame:
+def min_max_scaling(df: pd.DataFrame, column_name:list) -> pd.DataFrame:
 
     df_clean = df.copy()
-
-    #only numeric columns
-    numeric_columns = df_clean.select_dtypes(include=['number']).columns
-
-    #if no numeric columns return as it is
-    if numeric_columns.empty:
-        print("No numeric values")
-        return df_clean
-
     mmscaler = MinMaxScaler()
-    df_clean[numeric_columns] = mmscaler.fit_transform(df_clean[numeric_columns])
+
+    df_clean[column_name] = mmscaler.fit_transform(df_clean[column_name])
     
     return df_clean
 
-def standard_scaling(df: pd.DataFrame) -> pd.DataFrame:
+
+def standard_scaling(df: pd.DataFrame, column_name:list) -> pd.DataFrame:
 
     df_clean = df.copy()
-
-    #only numeric columns
-    numeric_columns = df_clean.select_dtypes(include=['number']).columns
-
-    #if no numeric columns return as it is
-    if numeric_columns.empty:
-        print("No numeric values")
-        return df_clean
-
     scaler = StandardScaler()
-    df_clean[numeric_columns] = scaler.fit_transform(df_clean[numeric_columns])
+
+    df_clean[column_name] = scaler.fit_transform(df_clean[column_name])
     
     return df_clean
