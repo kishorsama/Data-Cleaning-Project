@@ -39,3 +39,18 @@ def zscore(df: pd.DataFrame, threshold: float = 3.0) -> pd.DataFrame:
         
     print("Z-score Outliers Handled (Filtered).")
     return df_clean[m]
+
+def isolation_forest(df: pd.DataFrame, contamination: float = 0.05) -> pd.DataFrame:
+    df_clean = df.copy()
+    col = df_clean.select_dtypes(include=['number']).columns
+    
+    # isolation required data without NaN for fitting
+    df_temp = df_clean[col].dropna()
+    
+    forest = IsolationForest(contamination=contamination, random_state=42)
+    pred = forest.fit_predict(df_temp)
+    
+    valid_ind = df_temp.iloc[pred == 1].index
+    
+    print("Isolation Forest Outliers Handled (Filtered).")
+    return df_clean.loc[valid_ind]
