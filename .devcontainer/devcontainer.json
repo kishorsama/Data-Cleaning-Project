@@ -8,7 +8,9 @@
             "extensions": [
                 "ms-python.python",
                 "ms-toolsai.jupyter", // Required for Jupyter Notebooks
-                "formulahendry.code-runner"
+                "formulahendry.code-runner",
+                "mhutchie.git-graph"
+
             ]
         }
     }
