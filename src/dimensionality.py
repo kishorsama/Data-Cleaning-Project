@@ -1,5 +1,6 @@
 import pandas as pd
 from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
 
 def pca(df: pd.DataFrame, cols: list, n: int=2) -> pd.DataFrame:
     df_clean = df.copy()
@@ -18,3 +19,18 @@ def pca(df: pd.DataFrame, cols: list, n: int=2) -> pd.DataFrame:
     print(f"PCA Done! Kept about {round(var,1)}% of the variance.")
     return df_clean
     
+def tsne(df: pd.DataFrame, cols: list, n: int=2, perp: float=30) -> pd.DataFrame:
+    df_clean = df.copy()
+    t = TSNE(n_components=n, perplexity=perp, random_state=42)
+    
+    valid_df = df_clean[cols].dropna()
+    t_ft = t.fit_transform(valid_df)
+    
+    new_cols = [f"tSNE_{i+1}" for i in range(n)]
+    
+    temp = pd.DataFrame(t_ft, columns=new_cols, index=valid_df.index)
+    
+    df_clean = df_clean.drop(columns=cols).join(temp)
+    print("tSNE finished.")
+    
+    return df_clean
