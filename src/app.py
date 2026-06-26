@@ -3,14 +3,25 @@ import pandas as pd
 import io
 import sys
 sys.path.append('/workspaces/Data-Cleaning-Project/src')
-from dimensionality import pca, tsne
-from numerosity import random_sampling, stratified_sampling, cluster_reduction
-from compression import lossy, lossless
+
+#data cleaning
+from null_handling import drop, forward_fill, backward_fill, mean_filling, median_filling, mode_filling, interpolate_fill 
 from outlier_detection import handle_outliers
+from deduplication import remove_duplicates
+from typecasting import typecasting
+
+#data transformation
 from label_encoding import label_encoding
 from normalization import minmax, zscore
 from scaling import min_max_scaling, standard_scaling
 from discretization import equal_width, equal_frequency, kbins
+
+#data reduction
+from dimensionality import pca, tsne
+from numerosity import random_sampling, stratified_sampling, cluster_reduction
+from compression import lossy, lossless
+
+
 
 def export_section(df):
     """Provides UI for exporting the dataframe to CSV and Excel."""
@@ -146,57 +157,73 @@ def main():
             
             st.write("Apply basic cleaning steps to your data. Below are some common operations you can check and apply.")
             
-            # Duplicates
-            st.subheader("1. Handle Duplicates")
+            # Deduplication
+            st.subheader("1. Deduplication")
             duplicate_count = df.duplicated().sum()
             st.write(f"Duplicated rows found: **{duplicate_count}**")
-            if duplicate_count > 0:
-                if st.button("Drop Duplicate Rows"):
-                    st.session_state['df'] = df.drop_duplicates()
+            if st.button("Remove Duplicate Rows"):
+                try:
+                    new_df = remove_duplicates(df)
+                    st.session_state['df'] = new_df
                     st.success(f"Removed {duplicate_count} duplicate rows.")
                     st.rerun()
+                except Exception as e:
+                    st.error(f"Deduplication failed: {e}")
 
             st.divider()
 
-            # Missing Values
-            st.subheader("2. Handle Missing Values")
-            missing_cols = df.columns[df.isnull().any()].tolist()
-            if not missing_cols:
+            # Null value handling
+            st.subheader("2. Null Value Handling")
+            missing_total = int(df.isnull().sum().sum())
+            st.write(f"Total missing values found: **{missing_total}**")
+            if missing_total == 0:
                 st.write("✅ Great! No missing values detected in the dataset.")
             else:
-                target_col = st.selectbox("Select column with missing values:", missing_cols)
-                if target_col:
-                    method = st.radio("Choose a strategy to handle missing values:", [
-                        "Drop Rows with Nulls", 
-                        "Fill with Mean (Numeric only)", 
-                        "Fill with Median (Numeric only)", 
-                        "Fill with Mode",
-                        "Fill with Value '0'"
-                    ])
-                    
-                    if st.button("Apply Missing Value Fix"):
-                        new_df = df.copy()
-                        try:
-                            if method == "Drop Rows with Nulls":
-                                new_df = new_df.dropna(subset=[target_col])
-                            elif method == "Fill with Mean (Numeric only)":
-                                new_df[target_col] = new_df[target_col].fillna(new_df[target_col].mean())
-                            elif method == "Fill with Median (Numeric only)":
-                                new_df[target_col] = new_df[target_col].fillna(new_df[target_col].median())
-                            elif method == "Fill with Mode":
-                                new_df[target_col] = new_df[target_col].fillna(new_df[target_col].mode()[0])
-                            elif method == "Fill with Value '0'":
-                                new_df[target_col] = new_df[target_col].fillna(0)
-                                
-                            st.session_state['df'] = new_df
-                            st.success(f"Successfully applied '{method}' to column '{target_col}'.")
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"Operation failed. Ensure the strategy matches the data type. Error: {e}")
+                method = st.radio(
+                    "Choose a strategy to handle null values:",
+                    [
+                        "Drop Rows with Nulls",
+                        "Drop Columns with Nulls",
+                        "Forward Fill",
+                        "Backward Fill",
+                        "Fill with Mean",
+                        "Fill with Median",
+                        "Fill with Mode (Numeric)",
+                        "Fill with Mode (Categorical)",
+                        "Interpolate Numeric Values",
+                    ],
+                )
+
+                if st.button("Apply Null Handling"):
+                    try:
+                        if method == "Drop Rows with Nulls":
+                            new_df = drop(df, 0)
+                        elif method == "Drop Columns with Nulls":
+                            new_df = drop(df, 1)
+                        elif method == "Forward Fill":
+                            new_df = forward_fill(df, 0)
+                        elif method == "Backward Fill":
+                            new_df = backward_fill(df, 0)
+                        elif method == "Fill with Mean":
+                            new_df = mean_filling(df)
+                        elif method == "Fill with Median":
+                            new_df = median_filling(df)
+                        elif method == "Fill with Mode (Numeric)":
+                            new_df = mode_filling(df, 0)
+                        elif method == "Fill with Mode (Categorical)":
+                            new_df = mode_filling(df, 1)
+                        else:
+                            new_df = interpolate_fill(df, 0)
+
+                        st.session_state['df'] = new_df
+                        st.success(f"Successfully applied '{method}'.")
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"Null handling failed: {e}")
 
             st.divider()
 
-            # Outlier Detection
+            # Outlier detection
             st.subheader("3. Outlier Detection")
             st.write("Detect and handle outliers using the IQR (Interquartile Range) method.")
             numeric_cols = st.session_state['df'].select_dtypes(include=['number']).columns.tolist()
@@ -217,17 +244,13 @@ def main():
             # Typecasting
             st.subheader("4. Typecasting")
             st.write("Convert column data types to ensure proper data format.")
-            cast_col = st.selectbox("Select column to cast:", df.columns.tolist())
-            new_type = st.selectbox("Select target data type:", ["int", "float", "object", "datetime64[ns]"])
+            cast_cols = st.multiselect("Select columns to cast:", df.columns.tolist())
+            new_type = st.selectbox("Select target data type:", ["int", "float", "str", "datetime64[ns]"])
             if st.button("Apply Type Cast"):
-                new_df = df.copy()
                 try:
-                    if new_type == "datetime64[ns]":
-                        new_df[cast_col] = pd.to_datetime(new_df[cast_col])
-                    else:
-                        new_df[cast_col] = new_df[cast_col].astype(new_type)
+                    new_df = typecasting(df, cast_cols, new_type)
                     st.session_state['df'] = new_df
-                    st.success(f"Column '{cast_col}' cast to {new_type}.")
+                    st.success(f"Columns '{cast_cols}' cast to {new_type}.")
                     st.rerun()
                 except Exception as e:
                     st.error(f"Failed to cast: {e}")

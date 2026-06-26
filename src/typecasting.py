@@ -1,28 +1,23 @@
 import pandas as pd
 
-def typecasting(df:pd.DataFrame) -> pd.DataFrame:
-    df_clean=df.copy()
-    print("\nAvailable Columns:")
-    print(df_clean.columns.tolist())
-    
-    cols = input("\nEnter column names seperated by comma: ").split(',')
-    type = input("\nEnter datatype (int, float, str): ")
-    
-    for c in cols:
-        c=c.strip()
-        if c in df_clean.columns:
-            try:
-                if type == 'int':
-                    df_clean[c] = df_clean[c].astype('int')
-                elif type == 'float':
-                    df_clean[c] = df_clean[c].astype('float')
-                elif type == 'str':
-                    df_clean[c] = df_clean[c].astype('float')
-                else:
-                    print(f"Invalid datatype for column {c}")
-            except Exception as e:
-                print(f"Error converting {c}: {e}")
-        else:
-            print(f"Column '{c}' not found")
+
+def typecasting(df: pd.DataFrame, cols: list, dtype: str) -> pd.DataFrame:
+    df_clean = df.copy()
+
+    for col in cols:
+        if col not in df_clean.columns:
+            print(f"Column '{col}' not found")
+            continue
+
+        try:
+            if dtype == 'datetime64[ns]':
+                df_clean[col] = pd.to_datetime(df_clean[col])
+            elif dtype == 'str':
+                df_clean[col] = df_clean[col].astype('string')
+            else:
+                df_clean[col] = df_clean[col].astype(dtype)
+        except Exception as e:
+            print(f"Error converting {col}: {e}")
+
     print("\nType Casting Completed.")
     return df_clean
