@@ -181,11 +181,16 @@ def main():
             if missing_total == 0:
                 st.write("✅ Great! No missing values detected in the dataset.")
             else:
+                missing_cols = df.columns[df.isnull().any()].tolist()
+                selected_cols = st.multiselect(
+                    "Select columns to handle nulls in:",
+                    missing_cols,
+                    default=missing_cols,
+                )
                 method = st.radio(
                     "Choose a strategy to handle null values:",
                     [
                         "Drop Rows with Nulls",
-                        "Drop Columns with Nulls",
                         "Forward Fill",
                         "Backward Fill",
                         "Fill with Mean",
@@ -198,24 +203,23 @@ def main():
 
                 if st.button("Apply Null Handling"):
                     try:
+                        target_cols = selected_cols if selected_cols else None
                         if method == "Drop Rows with Nulls":
-                            new_df = drop(df, 0)
-                        elif method == "Drop Columns with Nulls":
-                            new_df = drop(df, 1)
+                            new_df = drop(df, target_cols)
                         elif method == "Forward Fill":
-                            new_df = forward_fill(df, 0)
+                            new_df = forward_fill(df, target_cols)
                         elif method == "Backward Fill":
-                            new_df = backward_fill(df, 0)
+                            new_df = backward_fill(df, target_cols)
                         elif method == "Fill with Mean":
-                            new_df = mean_filling(df)
+                            new_df = mean_filling(df, target_cols)
                         elif method == "Fill with Median":
-                            new_df = median_filling(df)
+                            new_df = median_filling(df, target_cols)
                         elif method == "Fill with Mode (Numeric)":
-                            new_df = mode_filling(df, 0)
+                            new_df = mode_filling(df, 0, target_cols)
                         elif method == "Fill with Mode (Categorical)":
-                            new_df = mode_filling(df, 1)
+                            new_df = mode_filling(df, 1, target_cols)
                         else:
-                            new_df = interpolate_fill(df, 0)
+                            new_df = interpolate_fill(df, target_cols)
 
                         st.session_state['df'] = new_df
                         st.success(f"Successfully applied '{method}'.")
