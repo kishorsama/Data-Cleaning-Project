@@ -159,11 +159,14 @@ def main():
             
             # Deduplication
             st.subheader("1. Deduplication")
-            duplicate_count = df.duplicated().sum()
+            _, duplicate_count, duplicated_rows = remove_duplicates(df)
             st.write(f"Duplicated rows found: **{duplicate_count}**")
+            if duplicate_count > 0:
+                with st.expander("View duplicated rows"):
+                    st.dataframe(duplicated_rows, use_container_width=True)
             if st.button("Remove Duplicate Rows"):
                 try:
-                    new_df = remove_duplicates(df)
+                    new_df, _, _ = remove_duplicates(df)
                     st.session_state['df'] = new_df
                     st.success(f"Removed {duplicate_count} duplicate rows.")
                     st.rerun()
