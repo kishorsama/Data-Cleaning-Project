@@ -1,0 +1,24 @@
+name: Discord Push Notification
+
+on:
+  push:
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Format timestamp
+        id: time
+        run: |
+          echo "formatted=$(TZ=Asia/Kolkata date -d '${{ github.event.head_commit.timestamp }}' '+%d-%m-%Y %I:%M %p IST')" >> $GITHUB_OUTPUT
+
+      - name: Send message to Discord
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          curl -H "Content-Type: application/json" \
+          -d "{
+            \"content\": \"🚀 **${{ github.actor }}** pushed to **${{ github.event.repository.name }}**\n\n🌿 Branch: \`${{ github.ref_name }}\`\n📝 Commit: ${{ github.event.head_commit.message }}\n🕒 Time: ${{ steps.time.outputs.formatted }}\n🔗 ${{ github.event.head_commit.url }}\n\n────────────────────────\n▶ TO BE CONTINUED...\n────────────────────────\"
+          }" \
+          "$WEBHOOK"
