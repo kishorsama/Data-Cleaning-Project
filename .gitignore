@@ -1,2 +1,6 @@
 ttest*
 __pycache__
+.env
+*.db
+*.sqlite
+*.sqlite3
