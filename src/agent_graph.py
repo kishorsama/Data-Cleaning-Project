@@ -37,6 +37,10 @@ def get_cached_df(dataset_id: str) -> Optional[pd.DataFrame]:
 def set_cached_df(dataset_id: str, df: pd.DataFrame) -> None:
     _DATA_CACHE[dataset_id] = df
 
+# Backward-compatible aliases
+store_df = set_cached_df
+retrieve_df = get_cached_df
+
 
 class CleaningState(TypedDict):
     dataset_id: str
